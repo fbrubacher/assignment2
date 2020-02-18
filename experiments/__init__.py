@@ -16,6 +16,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.utils import compute_sample_weight
 
+from mlrose.runners import NNGSRunner
+from mlrose.algorithms.sa import simulated_annealing
+from mlrose.algorithms.decay import GeomDecay, ArithDecay, ExpDecay, CustomSchedule
 from .base import *
 from .ANN import *
 from .Boosting import *
@@ -64,11 +67,25 @@ def basic_results(clf, classes, training_x, training_y, test_x, test_y, params, 
     if seed is not None:
         np.random.seed(seed)
 
+    grid_params = ({
+        'learning_rate': [0.001, 0.002, 0.003],
+        'schedule': [ArithDecay(1), ArithDecay(100), ArithDecay(1000)]
+    })
+
     curr_scorer = scorer
     if not balanced_dataset:
         curr_scorer = f1_scorer
 
-    if best_params or clf_type == 'MLRose':
+    if clf_type == 'MLRose':
+        NNGSRunner(x_train=training_x, y_train=training_y, x_test=test_x, y_test=test_y, experimment='ufc',
+                   algorithm=simulated_annealing,
+                   grid_search_parameters=grid_params, bias=True, early_stopping=True, clip_max=1e+10, max_attempts=500,
+                   generate_curves=True,
+                   iteration_list=[1, 10, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+                   seed=100)
+
+        pass
+    elif best_params:
         clf.fit(training_x, training_y)
         test_score = clf.score(test_x, test_y)
         cv = clf
@@ -97,7 +114,8 @@ def basic_results(clf, classes, training_x, training_y, test_x, test_y, params, 
                     bbox_inches='tight')
 
         plt = plot_confusion_matrix(cnf_matrix, classes, normalize=True,
-                                    title='Normalized Confusion Matrix: {} - {}'.format(clf_type, dataset_readable_name))
+                                    title='Normalized Confusion Matrix: {} - {}'.format(clf_type,
+                                                                                        dataset_readable_name))
         plt.savefig('{}/images/{}_{}_NCM.png'.format(OUTPUT_DIRECTORY, clf_type, dataset), format='png', dpi=150,
                     bbox_inches='tight')
 
