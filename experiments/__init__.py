@@ -16,9 +16,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.utils import compute_sample_weight
 
-from mlrose.runners import NNGSRunner
-from mlrose.algorithms.sa import simulated_annealing
-from mlrose.algorithms.decay import GeomDecay, ArithDecay, ExpDecay, CustomSchedule
+from mlrose_hiive.runners import NNGSRunner
+from mlrose_hiive.algorithms.sa import simulated_annealing
+from mlrose_hiive.algorithms.decay import GeomDecay, ArithDecay, ExpDecay, CustomSchedule
 from .base import *
 from .ANN import *
 from .Boosting import *
@@ -77,11 +77,12 @@ def basic_results(clf, classes, training_x, training_y, test_x, test_y, params, 
         curr_scorer = f1_scorer
 
     if clf_type == 'MLRose':
-        NNGSRunner(x_train=training_x, y_train=training_y, x_test=test_x, y_test=test_y, experimment='ufc',
+        NNGSRunner(x_train=training_x, y_train=training_y, x_test=test_x, y_test=test_y, experiment_name='ufc',
                    algorithm=simulated_annealing,
-                   grid_search_parameters=grid_params, bias=True, early_stopping=True, clip_max=1e+10, max_attempts=500,
-                   generate_curves=True,
+                   grid_search_parameters=grid_params,
                    iteration_list=[1, 10, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+                   bias=True, early_stopping=True, clip_max=1e+10, max_attempts=500,
+                   generate_curves=True,
                    seed=100)
 
         pass
